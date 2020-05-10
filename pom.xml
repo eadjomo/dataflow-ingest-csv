@@ -49,6 +49,7 @@
     <maven-surefire-plugin.version>2.21.0</maven-surefire-plugin.version>
     <nemo.version>0.1</nemo.version>
     <flink.artifact.name>beam-runners-flink-1.9</flink.artifact.name>
+    <dataflow.runner.version>2.20.0</dataflow.runner.version>
   </properties>
 
   <repositories>
@@ -136,6 +137,20 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>${maven-jar-plugin.version}</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix>lib/</classpathPrefix>
+              <mainClass>co.enydata.tutorials.dataflow.IngestCsvToBigQuery</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
       </plugin>
     </plugins>
 
@@ -512,6 +527,13 @@
       <artifactId>mockito-core</artifactId>
       <version>${mockito.version}</version>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.beam</groupId>
+      <artifactId>beam-runners-google-cloud-dataflow-java</artifactId>
+      <version>${dataflow.runner.version}</version>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 </project>
