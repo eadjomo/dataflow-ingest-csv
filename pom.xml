@@ -50,6 +50,7 @@
     <nemo.version>0.1</nemo.version>
     <flink.artifact.name>beam-runners-flink-1.9</flink.artifact.name>
     <dataflow.runner.version>2.20.0</dataflow.runner.version>
+    <beam-sdks-java-extensions-sql.version>2.20.0</beam-sdks-java-extensions-sql.version>
   </properties>
 
   <repositories>
@@ -535,5 +536,13 @@
       <version>${dataflow.runner.version}</version>
       <scope>runtime</scope>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.beam/beam-sdks-java-extensions-sql -->
+    <dependency>
+      <groupId>org.apache.beam</groupId>
+      <artifactId>beam-sdks-java-extensions-sql</artifactId>
+      <version>${beam-sdks-java-extensions-sql.version}</version>
+    </dependency>
+
+
   </dependencies>
 </project>

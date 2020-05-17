@@ -2,7 +2,7 @@ package co.enydata.tutorials.dataflow.util;
 
 import com.google.api.services.bigquery.model.TableFieldSchema;
 import com.google.api.services.bigquery.model.TableSchema;
-
+import org.apache.beam.sdk.schemas.Schema;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +20,36 @@ public abstract class TableUtils {
     }
 
 
-    private static Map<String, String>  getSchemaMap(String schema,String value,String delimiter){
+    public static Map<String, String>  getSchemaMap(String schema,String value,String delimiter){
         return Arrays.stream(schema.split(delimiter))
                 .map(s -> s.concat(value).split(":"))
                 .collect(Collectors.toMap(s -> s[0], s -> FieldType.toBigQueryType(s[1])));
+    }
+
+
+
+    public static Schema getSchema(String header, String delimiter){
+
+     List <Schema.Field>fields=  Arrays.stream(header.split(delimiter))
+                .map(s -> Schema.Field.of(s, Schema.FieldType.STRING))
+                .collect(Collectors.toList());
+
+        return Schema.builder().addFields(fields).build();
+    }
+
+
+
+    public static List<String> getCastExpression(String schema){
+
+        List <String>fields=  Arrays.stream(schema.split(","))
+                .map(s -> s.split(":"))
+                .collect(Collectors.toMap(s -> s[0], s ->String.format("cast('%s' AS %s)",s[0],s[1].toUpperCase())))
+                .values()
+                .stream().collect(Collectors.toList());
+               // .collect(Collectors.toMap(s -> s[0],s->String.format("cast ( %s as %s) as %s",s[0],s[1],s[0])));
+
+
+        return fields;
     }
 
 }

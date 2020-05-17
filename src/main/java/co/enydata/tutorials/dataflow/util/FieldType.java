@@ -3,6 +3,8 @@ package co.enydata.tutorials.dataflow.util;
 public abstract class FieldType {
     // StringFieldType is a string field type.
    public static final String StringFieldType = "STRING";
+
+    public static final String VARCHARFieldType = "VARCHAR";
     // BytesFieldType is a bytes field type.
     public static final String BytesFieldType  = "BYTES";
     // IntegerFieldType is a integer field type.
@@ -37,8 +39,12 @@ public abstract class FieldType {
             case BooleanFieldType:fieldType = BooleanFieldType ;
                 break;
 
+            case VARCHARFieldType:fieldType = StringFieldType ;
+                break;
+
             case StringFieldType:fieldType = StringFieldType ;
                 break;
+
 
             case IntegerFieldType:fieldType = IntegerFieldType ;
                 break;
