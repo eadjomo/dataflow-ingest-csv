@@ -34,8 +34,6 @@ public class IngestCsvToBigQuery {
                 .withValidation()
                 .as(IngestCSVOptions.class);
 
-      //  options.setPlannerName("org.apache.beam.sdk.extensions.sql.zetasql.ZetaSQLQueryPlanner");
-
         Pipeline pipeline = Pipeline.create(options);
         ObjectMapper mapper = new ObjectMapper();
 

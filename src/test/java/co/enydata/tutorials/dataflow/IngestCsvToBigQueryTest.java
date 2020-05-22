@@ -121,15 +121,6 @@ public class IngestCsvToBigQueryTest {
             .collect(Collectors.toList())).build())
             .addValues(split).build();
 
-
-
-/*
-      TableRow tableRow = new TableRow();
-      for (int i = 0; i < split.length; i++) {
-          TableFieldSchema col = TableUtils.getTableSchema(options.getSchema(),options.getHeader(),",").getFields().get(i);
-          tableRow.set(col.getName(), split[i]);
-      }*/
-
       List<Row>expectedResult= new ArrayList<Row>();
       expectedResult.add(row);
 
@@ -159,37 +150,10 @@ public class IngestCsvToBigQueryTest {
             .collect(Collectors.toList())).build())
             .addValues(split).build();
 
-
-
-   /* PCollection<Row> rows=TestPipeline.fromOptions(options)
-            .apply("Create input",Create
-                    .of(row).withRowSchema(Schema.builder().addFields(schemaDataInfo.getFields().stream()
-                            .map(s -> Schema.Field.of(s.getName(), Schema.FieldType.STRING))
-                            .collect(Collectors.toList())).build()));*/
-
-   // System.out.println(TableUtils.getSchema(options.getHeader(),options.getDelimiter()));
-
     ITransformer transformer=new BasicTransformerImpl();
 
     PCollection<Row> transformerOutPut=transformer.transform(readerOutPut,schemaDataInfo);
 
-   // TableSchema tableSchema=BigQueryUtils.toTableSchema(SchemaUtil.getSchema(schemaDataInfo,false));
-
-
-    /*TableRow tableRow = new TableRow();
-    for (int i = 0; i < split.length; i++) {
-     // TableFieldSchema col = TableUtils.getTableSchema(options.getSchema(),options.getHeader(),",").getFields().get(i);
-      TableFieldSchema col = tableSchema.getFields().get(i);
-              // System.out.println("E"+col.getName());
-      tableRow.set(col.getName(), split[i]);
-    }
-   // new SimpleDateFormat("yyyy/MM/dd").format(new Date());
-  tableRow.set("INGESTDATE", org.joda.time.LocalDate.now());
-    tableRow.set("VIEWS2", 12331+2);
-*/
-
-
-    //System.out.println("E"+tableRow.values());
     List<Row>expectedResult= new ArrayList<Row>();
     expectedResult.add(row);
 
@@ -204,46 +168,6 @@ public class IngestCsvToBigQueryTest {
   }
 
 
-/*
-  @Test
-  public void test_parse_CSV_format_successfully_with_tablerow() throws Exception {
-
-    List<String> input = new ArrayList<>();
-
-    String header="year,month,day,wikimedia_project,language,title,views";
-
-
-
-    IngestCSVOptions options = PipelineOptionsFactory.as(IngestCSVOptions.class);
-    options.setDelimiter(",");
-    options.setHeader(header);
-    options.setSchema(null);
-
-
-    input.add("2018,8,13,Wikinews,English,Spanish football: Sevilla signs Aleix Vidal from FC Barcelona,12331");
-
-    PCollection<TableRow> output= TestPipeline.fromOptions(options)
-            .apply("Create input", Create.of(input))
-            .apply("Parse pipeline",
-                    ParDo.of(new CsvParser()));
-
-    TableRow row = new TableRow();
-    String[] split = "2018,8,13,Wikinews,English,Spanish football: Sevilla signs Aleix Vidal from FC Barcelona,12331".split(",");
-    for (int i = 0; i < split.length; i++) {
-      TableFieldSchema col = TableUtils.getTableSchema(null,header,",").getFields().get(i);
-      row.set(col.getName(), split[i]);
-    }
-
-    List<TableRow>expectedResult= new ArrayList<TableRow>();
-    expectedResult.add(row);
-
-    // Run the pipeline.
-    testPipeline.run();
-
-    // Assert that the output PCollection matches
-    PAssert.that(output).containsInAnyOrder(expectedResult);
-
-  }*/
 
   @Test
   public void test_parse_header_return_empty_list() throws Exception {

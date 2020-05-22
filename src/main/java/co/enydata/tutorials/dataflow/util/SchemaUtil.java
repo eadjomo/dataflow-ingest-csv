@@ -108,7 +108,6 @@ public abstract class SchemaUtil {
 
             Schema.Field field = fields.get(i);
             String cellValue = row.getString(field.getName());
-            String dateFormat = "yyyy-MM-dd hh:ss";
             boolean isNullValue = Strings.isNullOrEmpty(cellValue);
             switch (field.getType().getTypeName()) {
                 case BOOLEAN:

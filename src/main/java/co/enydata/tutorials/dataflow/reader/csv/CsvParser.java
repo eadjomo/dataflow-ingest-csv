@@ -1,7 +1,6 @@
 package co.enydata.tutorials.dataflow.reader.csv;
 
 import co.enydata.tutorials.dataflow.common.IngestCSVOptions;
-import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.FileIO;
 import org.apache.beam.sdk.schemas.Schema;
 import org.apache.beam.sdk.transforms.DoFn;
