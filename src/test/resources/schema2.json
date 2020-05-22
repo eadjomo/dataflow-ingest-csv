@@ -2,15 +2,15 @@
   "fields": [
     {
       "name": "YEAR",
-      "type": "STRING"
+      "type": "INT"
     },
     {
       "name": "MONTH",
-      "type": "STRING"
+      "type": "INT"
     },
     {
       "name": "DAY",
-      "type": "STRING"
+      "type": "INT"
     },
     {
       "name": "wikimedia_project",
@@ -26,7 +26,7 @@
     },
     {
       "name": "VIEWS",
-      "type": "STRING"
+      "type": "INT"
     }
   ],
 

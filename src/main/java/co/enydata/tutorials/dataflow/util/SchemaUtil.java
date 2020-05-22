@@ -1,12 +1,16 @@
 package co.enydata.tutorials.dataflow.util;
 
 import co.enydata.tutorials.dataflow.model.SchemaDataInfo;
+import com.google.cloud.ByteArray;
+import com.google.common.base.Strings;
 import org.apache.beam.sdk.schemas.Schema;
+import org.apache.beam.sdk.values.Row;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.apache.beam.sdk.schemas.Schema.FieldType.*;
 
 
 public abstract class SchemaUtil {
@@ -17,7 +21,7 @@ public abstract class SchemaUtil {
         switch (type.toUpperCase()) {
 
             case "STRING":
-                return Schema.FieldType.STRING;
+                return STRING;
 
             case "BYTE":
                 return Schema.FieldType.BYTE;
@@ -29,13 +33,13 @@ public abstract class SchemaUtil {
                 return Schema.FieldType.INT16;
 
             case "INTEGER":
-                return Schema.FieldType.INT64;
+                return INT64;
 
             case "INT":
                 return Schema.FieldType.INT32;
 
             case "LONG":
-                return Schema.FieldType.INT64;
+                return INT64;
 
             case "FLOAT":
                 return Schema.FieldType.FLOAT;
@@ -44,7 +48,7 @@ public abstract class SchemaUtil {
                 return Schema.FieldType.DOUBLE;
 
             case "BOOLEAN":
-                return Schema.FieldType.BOOLEAN;
+                return BOOLEAN;
 
             case "DECIMAL":
                 return Schema.FieldType.DECIMAL;
@@ -77,6 +81,92 @@ public abstract class SchemaUtil {
                         .of(f.getName(),toFieldType(f.getType()))));
 
         return Schema.builder().addFields(fields).build();
+    }
+
+
+
+
+
+
+    public static Row castCellValue(Row row, Schema schema)
+            throws IllegalArgumentException {
+        // The input row's column count could be less than or equal to that of DB schema's.
+        if (row.getSchema().getFields().size() > schema.getFields().size()) {
+            throw new RuntimeException(
+                    String.format(
+                            "Parsed row's column count is larger than that of the schema's. "
+                                    + "Row size: %d, Column size: %d, Row content: %s",
+                            row.getSchema().getFields().size(), schema.getFields().size(), row.getValues().toString()));
+        }
+
+        List<Schema.Field> fields = schema.getFields();
+
+        Row.Builder rowBuilder = Row.withSchema(schema);
+
+        // Extract cell by cell
+        for (int i = 0; i < fields.size(); i++) {
+
+            Schema.Field field = fields.get(i);
+            String cellValue = row.getString(field.getName());
+            String dateFormat = "yyyy-MM-dd hh:ss";
+            boolean isNullValue = Strings.isNullOrEmpty(cellValue);
+            switch (field.getType().getTypeName()) {
+                case BOOLEAN:
+                    if (isNullValue) {
+                        rowBuilder.addValue(null);
+                    } else {
+                        Boolean bCellValue;
+                        if (cellValue.trim().equalsIgnoreCase("true")) {
+                            bCellValue = Boolean.TRUE;
+                        } else if (cellValue.trim().equalsIgnoreCase("false")) {
+                            bCellValue = Boolean.FALSE;
+                        } else {
+                            throw new IllegalArgumentException(
+                                    cellValue.trim() + " is not recognizable value " + "for BOOL type");
+                        }
+                        rowBuilder.addValue(Boolean.valueOf(cellValue));
+                    }
+                    break;
+                case INT64:
+                    if (isNullValue) {
+                        rowBuilder.addValue(null);
+                    } else {
+                        rowBuilder.addValue(Long.valueOf(cellValue.trim()));
+                    }
+                    break;
+                case FLOAT:
+                    if (isNullValue) {
+                        rowBuilder.addValue(null);
+                    } else {
+                        rowBuilder.addValue(Float.valueOf(cellValue.trim()));
+                    }
+                    break;
+                case STRING:
+                    rowBuilder.addValue(cellValue);
+                    break;
+                case DATETIME:
+                    if (isNullValue) {
+                        rowBuilder.addValue(null);
+                    } else {
+                        rowBuilder.addValue(org.apache.beam.sdk.extensions.sql.zetasql.DateTimeUtils.parseDate(cellValue.trim()));
+
+                    }
+                    break;
+
+                case BYTES:
+                    if (isNullValue) {
+                        rowBuilder.addValue(null);
+                    } else {
+                        rowBuilder.addValue(ByteArray.fromBase64(cellValue.trim()));
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            "Unrecognized column data type: " + field.getType());
+            }
+        }
+        return rowBuilder.build();
+
     }
 
 

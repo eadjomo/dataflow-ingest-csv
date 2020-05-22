@@ -2,13 +2,8 @@ package co.enydata.tutorials.dataflow.transformer;
 
 import co.enydata.tutorials.dataflow.model.SchemaDataInfo;
 import co.enydata.tutorials.dataflow.util.SchemaUtil;
-import co.enydata.tutorials.dataflow.util.TableUtils;
-import com.google.api.client.util.DateTime;
 import com.google.api.services.bigquery.model.TableRow;
-import org.apache.beam.sdk.extensions.sql.SqlTransform;
-import org.apache.beam.sdk.io.gcp.bigquery.BigQueryUtils;
 import org.apache.beam.sdk.schemas.Schema;
-import org.apache.beam.sdk.schemas.transforms.Select;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.ParDo;
@@ -16,37 +11,22 @@ import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.Row;
 
-import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
 import java.util.stream.Collectors;
 
-public class BasicTransformer {
+public class BasicTransformer  {
 
     public static PCollection<Row> transform(PCollection<Row> rowPCollection, SchemaDataInfo schemaDataInfo){
 
-        Schema schema= SchemaUtil.getSchema(schemaDataInfo,true);
+        Schema schema= SchemaUtil.getSchema(schemaDataInfo,false);
 
-        PCollection<Row> pCollection=   rowPCollection
-                 .apply("COMPUTE NEW FIELD", SqlTransform.query(
-                String.format("SELECT %s,%s from PCOLLECTION ",castField(schemaDataInfo),computedField(schemaDataInfo))))
-                .setRowSchema(schema);
-
-         pCollection.apply(logRecords("T"));
-
-       /*    PCollection<TableRow> toto= pCollection.apply(ParDo.of(new DoFn<Row, TableRow>() {
+      return  rowPCollection.apply("TRANSFORM",ParDo.of(new DoFn<Row, Row>() {
 
                   @ProcessElement
                   public void processElement(ProcessContext c){
-                    //  System.out.println(c.element().getValues());
-                      c.output(BigQueryUtils.toTableRow(c.element()).set("ingestDate", "2222"));
+                      c.output(SchemaUtil.castCellValue(c.element(),schema));
                   }
 
-              }));
-
-
-           toto.apply(logTableRow(""));*/
-           return pCollection;
+              })).setRowSchema(schema);
 }
 
 

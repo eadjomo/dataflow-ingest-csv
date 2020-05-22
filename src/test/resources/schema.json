@@ -10,7 +10,7 @@
     },
     {
       "name": "VALUE",
-      "type": "STRING"
+      "type": "FLOAT"
     },
     {
       "name": "CREATED",

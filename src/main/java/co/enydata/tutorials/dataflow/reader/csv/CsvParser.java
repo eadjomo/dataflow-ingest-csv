@@ -1,100 +1,55 @@
 package co.enydata.tutorials.dataflow.reader.csv;
 
 import co.enydata.tutorials.dataflow.common.IngestCSVOptions;
-import co.enydata.tutorials.dataflow.util.TableUtils;
-import com.google.api.services.bigquery.model.TableFieldSchema;
-import com.google.api.services.bigquery.model.TableRow;
+import org.apache.beam.sdk.Pipeline;
+import org.apache.beam.sdk.io.FileIO;
 import org.apache.beam.sdk.schemas.Schema;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.Row;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 
-public  class  CsvParser {
-    private static final Logger logger = LoggerFactory.getLogger(CsvParser.class);
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.channels.Channels;
 
+public class CsvParser {
 
-   /*public static  PCollection<TableRow> parse(PCollection<String> input) {
+    public static PCollection<Row> parse(PCollection<FileIO.ReadableFile> input, Schema schema){
+       IngestCSVOptions options=input.getPipeline().getOptions().as(IngestCSVOptions.class);
+       String header=options.getHeader();
+       String delimiter=options.getDelimiter();
 
-
-        return input.apply(ParDo.of(new DoFn<String, TableRow>() {
-            @ProcessElement
-            public void process(ProcessContext c){
-
-                try {
-                    IngestCSVOptions ops = c.getPipelineOptions().as(IngestCSVOptions.class);
-
-                    logger.info("Input File has this header {}", ops.getHeader());
-
-                    if (c.element().equalsIgnoreCase(ops.getHeader())) return;
-                    String[] split = c.element().split(ops.getDelimiter());
-                    if (split.length > ops.getHeader().split(ops.getDelimiter()).length) return;
-                    TableRow row = new TableRow();
-                    for (int i = 0; i < split.length; i++) {
-                        TableFieldSchema col = TableUtils.getTableSchema(ops.getSchema(),ops.getHeader(),ops.getDelimiter()).getFields().get(i);
-                        row.set(col.getName(), split[i]);
+        return input.apply("PARSE INPUT", ParDo.of(new DoFn<FileIO.ReadableFile, CSVRecord >(){
+                    @ProcessElement
+                    public void processElement(@Element FileIO.ReadableFile element, OutputReceiver<CSVRecord> receiver) throws IOException {
+                        InputStream is = Channels.newInputStream(element.open());
+                        Reader reader = new InputStreamReader(is);
+                        Iterable<CSVRecord> records = CSVFormat.DEFAULT
+                                .withHeader(header.split(delimiter))
+                                .withDelimiter(delimiter.charAt(0))
+                                .withFirstRecordAsHeader()
+                                .withIgnoreEmptyLines()
+                                .parse(reader);
+                        for (CSVRecord record : records) { receiver.output(record); }
                     }
-                    c.output(row);
-                } catch (Exception e) {
-                    logger.error(e.getLocalizedMessage());
-                    throw e;
-                }
-            }
-        }));
-    }*/
 
-
-    public static PCollection<Row> parse(PCollection<String> input, Schema schema) {
-
-
-        return input.apply("PARSE INPUT",ParDo.of(new DoFn<String, Row>() {
+                })).apply("CsvRecord to Beam Row",ParDo.of(new DoFn<CSVRecord, Row>() {
             @ProcessElement
-            public void process(ProcessContext c){
+            public void process(@Element CSVRecord record, OutputReceiver<Row> receiver){
+               Row.Builder rowBuilder=Row.withSchema(schema);
 
-                try {
-                    IngestCSVOptions ops = c.getPipelineOptions().as(IngestCSVOptions.class);
-
-                    logger.info("Input File has this header {}", ops.getHeader());
-
-                    if (c.element().equalsIgnoreCase(ops.getHeader())) return;
-                    String[] split = c.element().split(ops.getDelimiter());
-                    if (split.length > ops.getHeader().split(ops.getDelimiter()).length) return;
-                   Row row= Row.withSchema(schema).addValues(split).build();
-
-                    c.output(row);
-                } catch (Exception e) {
-                    logger.error(e.getLocalizedMessage());
-                    throw e;
+                for (String s : record) {
+                    rowBuilder.addValue(s);
                 }
+                receiver.output(rowBuilder.build());
             }
-        }));
+        })).setRowSchema(schema);
     }
+
+
 }
-
-    /*   @DoFn.ProcessElement
-        public void process(DoFn.ProcessContext c) {
-
-            IngestCSVOptions ops = c.getPipelineOptions().as(IngestCSVOptions.class);
-
-            logger.info("Input File has this header {}", ops.getHeader());
-
-            if (c.element().equalsIgnoreCase(ops.getHeader())) return;
-            String[] split = c.element().split(ops.getDelimiter());
-            if (split.length > ops.getHeader().split(ops.getDelimiter()).length) return;
-            TableRow row = new TableRow();
-            for (int i = 0; i < split.length; i++) {
-                TableFieldSchema col = TableUtils.getTableSchema(ops.getSchema(),ops.getHeader(),ops.getDelimiter()).getFields().get(i);
-                row.set(col.getName(), split[i]);
-            }
-            c.output(row);
-        }
-    }))
-
-
-    }*/
-
-
-
-

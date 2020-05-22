@@ -20,25 +20,17 @@ package co.enydata.tutorials.dataflow;
 import co.enydata.tutorials.dataflow.common.IngestCSVOptions;
 import co.enydata.tutorials.dataflow.model.SchemaDataInfo;
 import co.enydata.tutorials.dataflow.reader.IReader;
-import co.enydata.tutorials.dataflow.reader.csv.CsvParser;
 import co.enydata.tutorials.dataflow.reader.csv.CsvReaderImpl;
 import co.enydata.tutorials.dataflow.transformer.BasicTransformerImpl;
 import co.enydata.tutorials.dataflow.transformer.ITransformer;
 import co.enydata.tutorials.dataflow.util.SchemaUtil;
-import co.enydata.tutorials.dataflow.util.TableUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.util.DateTime;
-import com.google.api.services.bigquery.model.TableFieldSchema;
 import com.google.api.services.bigquery.model.TableRow;
-import com.google.api.services.bigquery.model.TableSchema;
-import org.apache.beam.sdk.io.gcp.bigquery.BigQueryUtils;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.schemas.Schema;
 import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
-import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.MapElements;
-import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.Row;
@@ -49,11 +41,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -104,7 +92,6 @@ public class IngestCsvToBigQueryTest {
   @Before
   public void setUp() throws Exception {
     String header="year,month,day,wikimedia_project,language,title,views";
-    options.setPlannerName("org.apache.beam.sdk.extensions.sql.zetasql.ZetaSQLQueryPlanner");
     options.setInputFile(this.getClass().getClassLoader().getResource("sample2.csv").getFile());
     options.setDelimiter(",");
     options.setHeader(header);
@@ -169,8 +156,8 @@ public class IngestCsvToBigQueryTest {
             .split(",");
     Row row= Row.withSchema(Schema.builder().addFields(schemaDataInfo.getFields().stream()
             .map(s -> Schema.Field.of(s.getName(), Schema.FieldType.STRING))
-            .collect(Collectors.toList())).addField("INGESTDATE", Schema.FieldType.DATETIME).addField("VIEWS2", Schema.FieldType.STRING).build())
-            .addValues(split).addValue(org.joda.time.DateTime.now()).addValue("12331"+"toto").build();
+            .collect(Collectors.toList())).build())
+            .addValues(split).build();
 
 
 

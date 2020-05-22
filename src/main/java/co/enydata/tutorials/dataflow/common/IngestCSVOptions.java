@@ -1,11 +1,10 @@
 package co.enydata.tutorials.dataflow.common;
 
-import org.apache.beam.sdk.extensions.sql.impl.BeamSqlPipelineOptions;
 import org.apache.beam.sdk.options.Description;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.Validation;
 
-public interface IngestCSVOptions extends BeamSqlPipelineOptions {
+public interface IngestCSVOptions extends PipelineOptions {
 
     @Description("Input file path")
     @Validation.Required
