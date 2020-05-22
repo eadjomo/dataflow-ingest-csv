@@ -18,15 +18,22 @@
 package co.enydata.tutorials.dataflow;
 
 import co.enydata.tutorials.dataflow.common.IngestCSVOptions;
+import co.enydata.tutorials.dataflow.model.SchemaDataInfo;
 import co.enydata.tutorials.dataflow.reader.IReader;
 import co.enydata.tutorials.dataflow.reader.csv.CsvParser;
 import co.enydata.tutorials.dataflow.reader.csv.CsvReaderImpl;
 import co.enydata.tutorials.dataflow.transformer.BasicTransformerImpl;
 import co.enydata.tutorials.dataflow.transformer.ITransformer;
+import co.enydata.tutorials.dataflow.util.SchemaUtil;
 import co.enydata.tutorials.dataflow.util.TableUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.util.DateTime;
 import com.google.api.services.bigquery.model.TableFieldSchema;
 import com.google.api.services.bigquery.model.TableRow;
+import com.google.api.services.bigquery.model.TableSchema;
+import org.apache.beam.sdk.io.gcp.bigquery.BigQueryUtils;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
+import org.apache.beam.sdk.schemas.Schema;
 import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.transforms.Create;
@@ -41,8 +48,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /** Tests of WordCount. */
 @RunWith(JUnit4.class)
@@ -53,7 +66,12 @@ public class IngestCsvToBigQueryTest {
 
 
   public  IngestCSVOptions options = PipelineOptionsFactory.as(IngestCSVOptions.class);
+  ObjectMapper mapper = new ObjectMapper();
 
+  SchemaDataInfo schemaDataInfo;
+
+  Schema schemaWithoutCompute;
+  Schema schemaWithCompute;
   @Rule
   public final transient TestPipeline testPipeline = TestPipeline.fromOptions(options);
 
@@ -62,6 +80,7 @@ public class IngestCsvToBigQueryTest {
             new SimpleFunction<Row, Void>() {
               @Override
               public Void apply(Row input) {
+                System.out.println(input.getSchema().getFields());
                 System.out.println(input.getValues() + suffix);
                 return null;
               }
@@ -73,7 +92,9 @@ public class IngestCsvToBigQueryTest {
             new SimpleFunction<TableRow, Void>() {
               @Override
               public Void apply(TableRow input) {
+                System.out.println(input.keySet());
                 System.out.println(input.values()+ suffix);
+
                 return null;
               }
             });
@@ -83,11 +104,18 @@ public class IngestCsvToBigQueryTest {
   @Before
   public void setUp() throws Exception {
     String header="year,month,day,wikimedia_project,language,title,views";
+    options.setPlannerName("org.apache.beam.sdk.extensions.sql.zetasql.ZetaSQLQueryPlanner");
     options.setInputFile(this.getClass().getClassLoader().getResource("sample2.csv").getFile());
     options.setDelimiter(",");
     options.setHeader(header);
-    options.setSchema("year:INTEGER,month:INTEGER,day:INTEGER,wikimedia_project:VARCHAR,language:VARCHAR,title:VARCHAR,views:INTEGER");
-
+    //options.setSchema("year:STRING,month:STRING,day:STRING,wikimedia_project:STRING,language:STRING,title:STRING,views:STRING");
+    options.setSchema(this.getClass().getClassLoader().getResource("schema2.json").getFile());
+    schemaDataInfo=mapper.readValue(new File(options.getSchema()),SchemaDataInfo.class);
+    schemaWithCompute=SchemaUtil.getSchema(schemaDataInfo,true);
+    schemaWithoutCompute=SchemaUtil.getSchema(schemaDataInfo,false);
+    System.out.println(schemaDataInfo);
+   // System.out.println(schemaWithoutCompute);
+   // System.out.println(schemaWithCompute);
   }
 
 
@@ -98,17 +126,25 @@ public class IngestCsvToBigQueryTest {
 
     IReader reader=new CsvReaderImpl();
 
-    PCollection<Row> readerOutPut=reader.read(testPipeline,options);
+    PCollection<Row> readerOutPut=reader.read(testPipeline,schemaDataInfo,options);
 
     String[] split = "2018,8,13,Wikinews,English,Spanish football: Sevilla signs Aleix Vidal from FC Barcelona,12331".split(",");
-    Row row= Row.withSchema(TableUtils.getSchema(options.getHeader(),options.getDelimiter()))
+    Row row= Row.withSchema(Schema.builder().addFields(schemaDataInfo.getFields().stream()
+            .map(s -> Schema.Field.of(s.getName(), Schema.FieldType.STRING))
+            .collect(Collectors.toList())).build())
             .addValues(split).build();
 
 
-   readerOutPut.apply(logRecords(" "));
 
-    List<Row>expectedResult= new ArrayList<Row>();
-    expectedResult.add(row);
+/*
+      TableRow tableRow = new TableRow();
+      for (int i = 0; i < split.length; i++) {
+          TableFieldSchema col = TableUtils.getTableSchema(options.getSchema(),options.getHeader(),",").getFields().get(i);
+          tableRow.set(col.getName(), split[i]);
+      }*/
+
+      List<Row>expectedResult= new ArrayList<Row>();
+      expectedResult.add(row);
 
     // Assert that the output PCollection matches
     PAssert.that(readerOutPut).containsInAnyOrder(expectedResult);
@@ -123,35 +159,54 @@ public class IngestCsvToBigQueryTest {
   @Test
   public void test_Transformer() throws Exception {
 
+      IReader reader=new CsvReaderImpl();
 
-    String[] split = "2018,8,13,Wikinews,English,Spanish football: Sevilla signs Aleix Vidal from FC Barcelona,12331".split(",");
-    Row row= Row.withSchema(TableUtils.getSchema(options.getHeader(),options.getDelimiter()))
-            .addValues(split).build();
+      PCollection<Row> readerOutPut=reader.read(testPipeline,schemaDataInfo,options);
+
+      //readerOutPut.apply(logRecords("e"));
+
+    String[] split = "2018,8,13,Wikinews,English,Spanish football: Sevilla signs Aleix Vidal from FC Barcelona,12331"
+            .split(",");
+    Row row= Row.withSchema(Schema.builder().addFields(schemaDataInfo.getFields().stream()
+            .map(s -> Schema.Field.of(s.getName(), Schema.FieldType.STRING))
+            .collect(Collectors.toList())).addField("INGESTDATE", Schema.FieldType.DATETIME).addField("VIEWS2", Schema.FieldType.STRING).build())
+            .addValues(split).addValue(org.joda.time.DateTime.now()).addValue("12331"+"toto").build();
 
 
 
-    PCollection<Row> rows=TestPipeline.fromOptions(options)
+   /* PCollection<Row> rows=TestPipeline.fromOptions(options)
             .apply("Create input",Create
-                    .of(row).withRowSchema(TableUtils.getSchema(options.getHeader(),options.getDelimiter())));
+                    .of(row).withRowSchema(Schema.builder().addFields(schemaDataInfo.getFields().stream()
+                            .map(s -> Schema.Field.of(s.getName(), Schema.FieldType.STRING))
+                            .collect(Collectors.toList())).build()));*/
 
-    System.out.println(TableUtils.getSchema(options.getHeader(),options.getDelimiter()));
+   // System.out.println(TableUtils.getSchema(options.getHeader(),options.getDelimiter()));
 
     ITransformer transformer=new BasicTransformerImpl();
 
-    PCollection<TableRow> transformerOutPut=transformer.transform(rows,TableUtils.getCastExpression(options.getSchema()));
+    PCollection<Row> transformerOutPut=transformer.transform(readerOutPut,schemaDataInfo);
+
+   // TableSchema tableSchema=BigQueryUtils.toTableSchema(SchemaUtil.getSchema(schemaDataInfo,false));
 
 
-
-    TableRow tableRow = new TableRow();
+    /*TableRow tableRow = new TableRow();
     for (int i = 0; i < split.length; i++) {
-      TableFieldSchema col = TableUtils.getTableSchema(options.getSchema(),options.getHeader(),",").getFields().get(i);
+     // TableFieldSchema col = TableUtils.getTableSchema(options.getSchema(),options.getHeader(),",").getFields().get(i);
+      TableFieldSchema col = tableSchema.getFields().get(i);
+              // System.out.println("E"+col.getName());
       tableRow.set(col.getName(), split[i]);
     }
+   // new SimpleDateFormat("yyyy/MM/dd").format(new Date());
+  tableRow.set("INGESTDATE", org.joda.time.LocalDate.now());
+    tableRow.set("VIEWS2", 12331+2);
+*/
 
-    List<TableRow>expectedResult= new ArrayList<TableRow>();
-    expectedResult.add(tableRow);
 
-     transformerOutPut.apply(logTableRow(" "));
+    //System.out.println("E"+tableRow.values());
+    List<Row>expectedResult= new ArrayList<Row>();
+    expectedResult.add(row);
+
+   transformerOutPut.apply(logRecords(" "));
 
     // Assert that the output PCollection matches
     PAssert.that(transformerOutPut).containsInAnyOrder(expectedResult);

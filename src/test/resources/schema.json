@@ -1,0 +1,20 @@
+{
+  "fields": [
+    {
+      "name": "ID",
+      "type": "INTEGER"
+    },
+    {
+      "name": "CODE",
+      "type": "STRING"
+    },
+    {
+      "name": "VALUE",
+      "type": "STRING"
+    },
+    {
+      "name": "CREATED",
+      "type": "DATE"
+    }
+  ]
+}

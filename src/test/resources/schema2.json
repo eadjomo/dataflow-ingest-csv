@@ -1,0 +1,45 @@
+{
+  "fields": [
+    {
+      "name": "YEAR",
+      "type": "STRING"
+    },
+    {
+      "name": "MONTH",
+      "type": "STRING"
+    },
+    {
+      "name": "DAY",
+      "type": "STRING"
+    },
+    {
+      "name": "wikimedia_project",
+      "type": "STRING"
+    },
+    {
+      "name": "LANGUAGE",
+      "type": "STRING"
+    },
+    {
+      "name": "TITLE",
+      "type": "STRING"
+    },
+    {
+      "name": "VIEWS",
+      "type": "STRING"
+    }
+  ],
+
+  "computedfields": [
+    {
+      "name": "INGESTDATE",
+      "type": "DATE",
+      "sql":"CURRENT_TIMESTAMP()"
+    },
+    {
+      "name": "VIEWS2",
+      "type": "STRING",
+      "sql":"concat(views,'toto')"
+    }
+  ]
+}

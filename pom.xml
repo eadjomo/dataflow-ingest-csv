@@ -51,6 +51,7 @@
     <flink.artifact.name>beam-runners-flink-1.9</flink.artifact.name>
     <dataflow.runner.version>2.20.0</dataflow.runner.version>
     <beam-sdks-java-extensions-sql.version>2.20.0</beam-sdks-java-extensions-sql.version>
+    <zetasql-jni-channel.version>2020.04.1</zetasql-jni-channel.version>
   </properties>
 
   <repositories>
@@ -543,6 +544,34 @@
       <version>${beam-sdks-java-extensions-sql.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.beam</groupId>
+      <artifactId>beam-sdks-java-extensions-sql-zetasql</artifactId>
+      <version>${beam-sdks-java-extensions-sql.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.zetasql</groupId>
+      <artifactId>zetasql-jni-channel</artifactId>
+      <version>${zetasql-jni-channel.version}</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/com.google.zetasql/zetasql-types -->
+    <dependency>
+      <groupId>com.google.zetasql</groupId>
+      <artifactId>zetasql-types</artifactId>
+      <version>2020.04.1</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/com.google.zetasql/zetasql-client -->
+    <dependency>
+      <groupId>com.google.zetasql</groupId>
+      <artifactId>zetasql-client</artifactId>
+      <version>2020.04.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-storage</artifactId>
+      <version>1.108.0</version>
+    </dependency>
 
   </dependencies>
 </project>

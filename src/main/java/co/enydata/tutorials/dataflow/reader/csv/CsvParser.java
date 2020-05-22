@@ -4,6 +4,7 @@ import co.enydata.tutorials.dataflow.common.IngestCSVOptions;
 import co.enydata.tutorials.dataflow.util.TableUtils;
 import com.google.api.services.bigquery.model.TableFieldSchema;
 import com.google.api.services.bigquery.model.TableRow;
+import org.apache.beam.sdk.schemas.Schema;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
@@ -15,7 +16,7 @@ public  class  CsvParser {
     private static final Logger logger = LoggerFactory.getLogger(CsvParser.class);
 
 
-  /*  public PCollection<TableRow> parse(PCollection<String> input) {
+   /*public static  PCollection<TableRow> parse(PCollection<String> input) {
 
 
         return input.apply(ParDo.of(new DoFn<String, TableRow>() {
@@ -42,13 +43,13 @@ public  class  CsvParser {
                 }
             }
         }));
-    }
-*/
-
-    public static PCollection<Row> parse(PCollection<String> input) {
+    }*/
 
 
-        return input.apply(ParDo.of(new DoFn<String, Row>() {
+    public static PCollection<Row> parse(PCollection<String> input, Schema schema) {
+
+
+        return input.apply("PARSE INPUT",ParDo.of(new DoFn<String, Row>() {
             @ProcessElement
             public void process(ProcessContext c){
 
@@ -60,8 +61,7 @@ public  class  CsvParser {
                     if (c.element().equalsIgnoreCase(ops.getHeader())) return;
                     String[] split = c.element().split(ops.getDelimiter());
                     if (split.length > ops.getHeader().split(ops.getDelimiter()).length) return;
-                   Row row= Row.withSchema(TableUtils.getSchema(ops.getHeader(),ops.getDelimiter()))
-                            .addValues(split).build();
+                   Row row= Row.withSchema(schema).addValues(split).build();
 
                     c.output(row);
                 } catch (Exception e) {
@@ -93,8 +93,8 @@ public  class  CsvParser {
     }))
 
 
-    }
+    }*/
 
-    }
 
-*/
+
+

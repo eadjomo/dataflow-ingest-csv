@@ -1,12 +1,15 @@
 package co.enydata.tutorials.dataflow.transformer;
 
 import co.enydata.tutorials.dataflow.common.IngestCSVOptions;
+import co.enydata.tutorials.dataflow.model.SchemaDataInfo;
+import co.enydata.tutorials.dataflow.util.SchemaUtil;
 import co.enydata.tutorials.dataflow.util.TableUtils;
 import com.google.api.services.bigquery.model.TableFieldSchema;
 import com.google.api.services.bigquery.model.TableRow;
 import javafx.scene.control.Tab;
 import org.apache.beam.sdk.extensions.sql.SqlTransform;
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryUtils;
+import org.apache.beam.sdk.schemas.Schema;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
@@ -41,15 +44,22 @@ public class BasicTransformerImpl implements ITransformer {
 }*/
 
 
-
+/*
     @Override
-    public  PCollection<TableRow> transform(PCollection<Row> rowPCollection,List<String> fieldList) {
+    public  PCollection<TableRow> transform(PCollection<TableRow> rowPCollection,List<String> fieldList) {
 
-        PCollection<TableRow> output= BasicTransformer.transform(rowPCollection,fieldList);
+        PCollection<TableRow> output= BasicTransformer.transform(rowPCollection,fieldList,rowPCollection.getSchema());
 
         return output;
 
+    }*/
+
+
+    @Override
+    public  PCollection<Row> transform(PCollection<Row> rowPCollection,
+                                            SchemaDataInfo schemaDataInfo) {
+
+        return BasicTransformer.transform(rowPCollection,schemaDataInfo);
+
     }
-
-
 }

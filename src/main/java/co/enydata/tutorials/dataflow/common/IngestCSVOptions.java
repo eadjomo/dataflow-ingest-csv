@@ -1,10 +1,11 @@
 package co.enydata.tutorials.dataflow.common;
 
+import org.apache.beam.sdk.extensions.sql.impl.BeamSqlPipelineOptions;
 import org.apache.beam.sdk.options.Description;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.Validation;
 
-public interface IngestCSVOptions extends PipelineOptions {
+public interface IngestCSVOptions extends BeamSqlPipelineOptions {
 
     @Description("Input file path")
     @Validation.Required
@@ -21,7 +22,7 @@ public interface IngestCSVOptions extends PipelineOptions {
     String getDelimiter();
     void setDelimiter(String value);
 
-    @Description("table schema in format field1:type1,field2:type2,... ")
+    @Description("table schema in format Json format")
     String getSchema();
     void setSchema(String value);
 

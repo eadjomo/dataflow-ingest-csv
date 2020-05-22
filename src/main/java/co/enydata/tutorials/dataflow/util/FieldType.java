@@ -1,84 +1,34 @@
 package co.enydata.tutorials.dataflow.util;
 
 public abstract class FieldType {
-    // StringFieldType is a string field type.
-   public static final String StringFieldType = "STRING";
+   /*public static final String STRING = "STRING";
 
-    public static final String VARCHARFieldType = "VARCHAR";
-    // BytesFieldType is a bytes field type.
-    public static final String BytesFieldType  = "BYTES";
-    // IntegerFieldType is a integer field type.
-    public static final String IntegerFieldType  = "INTEGER";
-    // FloatFieldType is a float field type.
-    public static final String FloatFieldType  = "FLOAT";
-    // BooleanFieldType is a boolean field type.
-    public static final String  BooleanFieldType  = "BOOLEAN";
-    // TimestampFieldType is a timestamp field type.
-    public static final String  TimestampFieldType  = "TIMESTAMP";
-    // RecordFieldType is a record field type. It is typically used to create columns with repeated or nested data.
-    public static final String RecordFieldType  = "RECORD";
-    // DateFieldType is a date field type.
-    public static final String DateFieldType  = "DATE";
-    // TimeFieldType is a time field type.
-    public static final String TimeFieldType  = "TIME";
-    // DateTimeFieldType is a datetime field type.
-    public static final String DateTimeFieldType  = "DATETIME";
-    // NumericFieldType is a numeric field type. Numeric types include integer types, floating point types and the
-    // NUMERIC data type.
-    public static final String  NumericFieldType  = "NUMERIC";
-    // GeographyFieldType is a string field type.  Geography types represent a set of points
-    // on the Earth's surface, represented in Well Known Text (WKT) format.
-    public static final String  GeographyFieldType  = "GEOGRAPHY";
+    public static final String BYTES  = "BYTES";
 
+    public static final String INT16  = "INT16";
 
+    public static final String INT32  = "INT32";
 
-  public   static String toBigQueryType(String sType) {
-        final String fieldType;
+    public static final String INT64  = "INT64";
 
-        switch (sType.toUpperCase()) {
-            case BooleanFieldType:fieldType = BooleanFieldType ;
-                break;
+    public static final String FLOAT  = "FLOAT";
 
-            case VARCHARFieldType:fieldType = StringFieldType ;
-                break;
+    public static final String DOUBLE  = "DOUBLE";
 
-            case StringFieldType:fieldType = StringFieldType ;
-                break;
+    public static final String  BOOLEAN  = "BOOLEAN";
 
+    public static final String  TIMESTAMP  = "TIMESTAMP";
 
-            case IntegerFieldType:fieldType = IntegerFieldType ;
-                break;
+    public static final String DATE  = "DATE";
 
-            case FloatFieldType:fieldType = FloatFieldType ;
-                break;
+    public static final String TIME  = "TIME";
 
-            case BytesFieldType:fieldType = BytesFieldType ;
-                break;
+    public static final String DATETIME  = "DATETIME";
 
-            case DateFieldType:fieldType = DateFieldType ;
-                break;
+    public static final String  NUMERIC  = "NUMERIC";
 
-            case RecordFieldType:fieldType = RecordFieldType ;
-                break;
+    public static final String  GEOGRAPHY  = "GEOGRAPHY";
 
-            case TimeFieldType:fieldType = TimeFieldType ;
-                break;
-
-            case TimestampFieldType:fieldType = TimestampFieldType ;
-                break;
-
-            case NumericFieldType:fieldType = NumericFieldType ;
-                break;
-
-            case DateTimeFieldType:fieldType = DateTimeFieldType ;
-                break;
-
-            case GeographyFieldType:fieldType = GeographyFieldType ;
-                break;
-
-            default:
-                throw new IllegalArgumentException("Unknown BigQuey field type " + sType.toUpperCase());
-        }
-        return fieldType;
-    }
+    public static final String  DECIMAL="DECIMAL";
+*/
 }
